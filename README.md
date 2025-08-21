@@ -120,12 +120,5 @@ MIT License - See [LICENSE](https://opensource.org/licenses/MIT)
 ---
 
 **Enjoy secure password management on Wayland!** 🎉  
-For support and contributions, visit [GitHub repository](https://github.com/yourusername/passmenu)
+For support and contributions, visit [GitHub repository](https://github.com/evgenyzh/passmenu)
 
----
-
-Эта реализация точно соответствует вашему стеку (Niri + dotool-geb) и полностью соответствует текущей конфигурации горячих клавиш. Особое внимание уделено:
-1. Правильной установке dotool из source
-2. Настройке прав для /dev/uinput
-3. Четкой документации по режимам работы
-4. Отсутствию требования к ydotoold
