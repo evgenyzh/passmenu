@@ -9,12 +9,14 @@ Usage: passmenu [OPTIONS]
 Options:
   --type     Directly type password into focused window + press Enter
   --paste    Copy to clipboard and directly type password (no Enter)
+  --print    Print clipboard content to terminal
   --help     Show this help message
 
 Default behavior: Copy password to clipboard with visual confirmation
 
 Features:
-- Three access modes for different use cases
+- Four access modes for different use cases
+- Clipboard print option in selection menu
 - Visual notifications and clipboard feedback
 - Wayland-native clipboard handling
 EOF
@@ -43,6 +45,7 @@ shopt -s nullglob globstar
 # Mode flags
 typeit=0
 pasteit=0
+printit=0
 delay_enter=0.1  # Delay before pressing Enter
 
 # Determine mode for UI
@@ -56,6 +59,10 @@ while [[ $# -gt 0 ]]; do
         --paste)
             pasteit=1
             mode="Auto-Paste"
+            ;;
+        --print)
+            printit=1
+            mode="Print Clipboard"
             ;;
         *) 
             if [[ "$1" == -* ]]; then
@@ -73,9 +80,45 @@ password_files=("$prefix"/**/*.gpg)
 password_files=("${password_files[@]#"$prefix"/}")
 password_files=("${password_files[@]%.gpg}")
 
+# Add clipboard option to menu
+menu_items=("${password_files[@]}")
+menu_items+=("Use Clipboard Content")
+
 # Show selection menu
-password=$(printf '%s\n' "${password_files[@]}" | fuzzel -d -p "passmenu: $mode" "$@")
-[[ -n $password ]] || exit
+selected=$(printf '%s\n' "${menu_items[@]}" | fuzzel -d -p "passmenu: $mode" "$@")
+[[ -n $selected ]] || exit
+
+# Check if clipboard option was selected
+if [[ "$selected" == "Use Clipboard Content" ]]; then
+    clipboard_content=$(wl-paste)
+    if [[ -n "$clipboard_content" ]]; then
+        # Mode: Direct typing for terminals (types + Enter)
+        if [[ $typeit -eq 1 ]]; then
+            echo "type $clipboard_content" | dotool       # Type clipboard content
+            sleep $delay_enter                            # Short delay
+            echo "key enter" | dotool                     # Press Enter
+            notify-send -t 1500 "Clipboard Entered" "⌨ Content 👉 Enter"
+        
+        # Mode: Auto-paste for GUI apps (copies + types)
+        elif [[ $pasteit -eq 1 ]]; then
+            echo -n "$clipboard_content" | wl-copy        # Copy to clipboard
+            echo "type $clipboard_content" | dotool       # Type clipboard content directly
+            notify-send -t 1500 "Clipboard Pasted" "📥 Content"
+        
+        # Default mode: Print to terminal
+        else
+            echo "$clipboard_content"
+            notify-send -t 1500 "Clipboard Printed" "📄 Content printed to terminal"
+        fi
+    else
+        echo "Clipboard is empty"
+        notify-send -t 3000 "Clipboard Empty" "⚠ No content to process"
+    fi
+    exit 0
+fi
+
+# Use selected password
+password="$selected"
 
 # Extract password (first line of file)
 stored_password=$(pass show "$password" | head -n1)
@@ -92,6 +135,17 @@ elif [[ $pasteit -eq 1 ]]; then
     echo -n "$stored_password" | wl-copy        # Copy to clipboard
     echo "type $stored_password" | dotool       # Type password directly
     notify-send -t 1500 "Password Pasted" "📥 $password"
+
+# Mode: Print clipboard content
+elif [[ $printit -eq 1 ]]; then
+    clipboard_content=$(wl-paste)
+    if [[ -n "$clipboard_content" ]]; then
+        echo "$clipboard_content"
+        notify-send -t 1500 "Clipboard Printed" "📄 Content printed to terminal"
+    else
+        echo "Clipboard is empty"
+        notify-send -t 3000 "Clipboard Empty" "⚠ No content to print"
+    fi
 
 # Default mode: Clipboard copy
 else

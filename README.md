@@ -4,10 +4,12 @@
 
 ## Features ✨
 
-- **Three distinct access methods**:
+- **Four distinct access methods**:
   - 🔡 Direct typing (with final Enter press)
   - 📋 Clipboard copying with visual verification
   - 🚀 Auto-paste functionality for GUI apps
+  - 📄 Clipboard content integration in all modes
+- **Universal clipboard support**: Use clipboard content in any mode
 - Wayland-native implementation
 - Full compatibility with Niri WM
 - Minimal dependencies
@@ -54,9 +56,9 @@ chmod +x ~/.local/bin/passmenu
 ## Niri Configuration 🔑
 Add to the binds section
 ```toml
-    Mod+Ctrl+P hotkey-overlay-title="Paste password" { spawn "sh" "-c" "passmenu.sh --paste"; }
-    Mod+Alt+P hotkey-overlay-title="Copy password" { spawn "sh" "-c" "passmenu.sh"; }
-    Mod+P hotkey-overlay-title="Type password" { spawn "sh" "-c" "passmenu.sh --type"; }
+    Mod+Ctrl+P hotkey-overlay-title="Paste password" { spawn "sh" "-c" "passmenu --paste"; }
+    Mod+Alt+P hotkey-overlay-title="Copy password" { spawn "sh" "-c" "passmenu"; }
+    Mod+P hotkey-overlay-title="Type password" { spawn "sh" "-c" "passmenu --type"; }
 ```
 
 ## How It Works ⚙️
@@ -83,6 +85,12 @@ graph LR
 | Auto-Paste   | Mod+Ctrl+P    | Browser forms      | Password Pasted 📥      |
 | Copy         | Mod+Alt+P     | Universal          | Password Copied 📋      |
 | Direct Type  | Mod+P         | Terminal sessions  | Password Entered ⌨     |
+
+### Clipboard Integration 📋
+All modes now include a **"Use Clipboard Content"** option in the selection menu that:
+- **Direct Type mode**: Types clipboard content + Enter
+- **Auto-Paste mode**: Copies to clipboard + types content
+- **Copy mode**: Prints clipboard content to terminal
 
 ## Troubleshooting 🔧
 
